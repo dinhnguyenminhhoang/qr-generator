@@ -522,7 +522,7 @@ export default function Home() {
       <footer className="bg-gray-800 text-white py-6 mt-12">
         <div className="container mx-auto px-4 text-center">
           <p className="text-gray-300">
-            © 2024 QR Code Generator. Tạo mã QR miễn phí và dễ dàng.
+            DONATE : 050133514497 - SACOMBANK - DINH NGUYEN MINH HOANG
           </p>
         </div>
       </footer>
