@@ -10,9 +10,17 @@ import {
   Phone,
   Wifi,
   MapPin,
-  CreditCard,
   MessageSquare,
   User,
+  FileText,
+  Upload,
+  Facebook,
+  Instagram,
+  Twitter,
+  Linkedin,
+  Youtube,
+  Share2,
+  AlertCircle,
 } from "lucide-react";
 
 type QRType =
@@ -23,7 +31,15 @@ type QRType =
   | "wifi"
   | "location"
   | "vcard"
-  | "sms";
+  | "sms"
+  | "pdf"
+  | "image"
+  | "facebook"
+  | "instagram"
+  | "twitter"
+  | "linkedin"
+  | "youtube"
+  | "social";
 
 interface WiFiData {
   ssid: string;
@@ -39,19 +55,25 @@ export default function Home() {
   const [bgColor, setBgColor] = useState("#ffffff");
   const [errorLevel, setErrorLevel] = useState<"L" | "M" | "Q" | "H">("M");
 
-  // WiFi specific states
   const [wifiData, setWifiData] = useState<WiFiData>({
     ssid: "",
     password: "",
     encryption: "WPA",
   });
 
-  // VCard specific states
   const [vcardData, setVcardData] = useState({
     name: "",
     phone: "",
     email: "",
     organization: "",
+  });
+
+  const [socialData, setSocialData] = useState({
+    facebook: "",
+    instagram: "",
+    twitter: "",
+    linkedin: "",
+    youtube: "",
   });
 
   const qrRef = useRef<HTMLDivElement>(null);
@@ -72,6 +94,72 @@ export default function Home() {
         return `BEGIN:VCARD\nVERSION:3.0\nFN:${vcardData.name}\nTEL:${vcardData.phone}\nEMAIL:${vcardData.email}\nORG:${vcardData.organization}\nEND:VCARD`;
       case "sms":
         return `sms:${qrValue}`;
+      case "pdf":
+      case "image":
+        return qrValue;
+      case "facebook":
+        return socialData.facebook.startsWith("http")
+          ? socialData.facebook
+          : `https://facebook.com/${socialData.facebook}`;
+      case "instagram":
+        return socialData.instagram.startsWith("http")
+          ? socialData.instagram
+          : `https://instagram.com/${socialData.instagram}`;
+      case "twitter":
+        return socialData.twitter.startsWith("http")
+          ? socialData.twitter
+          : `https://twitter.com/${socialData.twitter}`;
+      case "linkedin":
+        return socialData.linkedin.startsWith("http")
+          ? socialData.linkedin
+          : `https://linkedin.com/in/${socialData.linkedin}`;
+      case "youtube":
+        return socialData.youtube.startsWith("http")
+          ? socialData.youtube
+          : `https://youtube.com/${socialData.youtube}`;
+      case "social":
+        const links = [];
+        if (socialData.facebook)
+          links.push(
+            `Facebook: ${
+              socialData.facebook.startsWith("http")
+                ? socialData.facebook
+                : "https://facebook.com/" + socialData.facebook
+            }`
+          );
+        if (socialData.instagram)
+          links.push(
+            `Instagram: ${
+              socialData.instagram.startsWith("http")
+                ? socialData.instagram
+                : "https://instagram.com/" + socialData.instagram
+            }`
+          );
+        if (socialData.twitter)
+          links.push(
+            `Twitter: ${
+              socialData.twitter.startsWith("http")
+                ? socialData.twitter
+                : "https://twitter.com/" + socialData.twitter
+            }`
+          );
+        if (socialData.linkedin)
+          links.push(
+            `LinkedIn: ${
+              socialData.linkedin.startsWith("http")
+                ? socialData.linkedin
+                : "https://linkedin.com/in/" + socialData.linkedin
+            }`
+          );
+        if (socialData.youtube)
+          links.push(
+            `YouTube: ${
+              socialData.youtube.startsWith("http")
+                ? socialData.youtube
+                : "https://youtube.com/" + socialData.youtube
+            }`
+          );
+        return links.join("\n");
       default:
         return qrValue;
     }
@@ -109,13 +197,21 @@ export default function Home() {
 
   const qrTypes = [
     { value: "text", label: "Văn bản", icon: QrCode },
-    { value: "url", label: "Website URL", icon: Link2 },
+    { value: "url", label: "Website", icon: Link2 },
     { value: "email", label: "Email", icon: Mail },
-    { value: "phone", label: "Số điện thoại", icon: Phone },
+    { value: "phone", label: "Điện thoại", icon: Phone },
+    { value: "sms", label: "SMS", icon: MessageSquare },
     { value: "wifi", label: "WiFi", icon: Wifi },
     { value: "location", label: "Vị trí", icon: MapPin },
     { value: "vcard", label: "Danh thiếp", icon: User },
-    { value: "sms", label: "SMS", icon: MessageSquare },
+    { value: "pdf", label: "PDF", icon: FileText },
+    { value: "image", label: "Hình ảnh", icon: Upload },
+    { value: "facebook", label: "Facebook", icon: Facebook },
+    { value: "instagram", label: "Instagram", icon: Instagram },
+    { value: "twitter", label: "Twitter", icon: Twitter },
+    { value: "linkedin", label: "LinkedIn", icon: Linkedin },
+    { value: "youtube", label: "YouTube", icon: Youtube },
+    { value: "social", label: "Tất cả MXH", icon: Share2 },
   ];
 
   const renderInputField = () => {
@@ -233,6 +329,169 @@ export default function Home() {
             </div>
           </div>
         );
+      case "pdf":
+      case "image":
+        return (
+          <div className="space-y-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex gap-3">
+              <AlertCircle
+                className="text-blue-600 flex-shrink-0 mt-0.5"
+                size={20}
+              />
+              <div>
+                <p className="text-sm text-blue-800 font-medium mb-1">
+                  Lưu ý quan trọng
+                </p>
+                <p className="text-xs text-blue-700">
+                  Mã QR không thể chứa trực tiếp file ảnh hoặc PDF do giới hạn
+                  dung lượng (~3KB). Hãy upload file lên dịch vụ lưu trữ (Google
+                  Drive, Dropbox, ImgBB...) và nhập link vào bên dưới.
+                </p>
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                URL {qrType === "pdf" ? "PDF" : "Hình ảnh"}
+              </label>
+              <input
+                type="url"
+                value={qrValue}
+                onChange={(e) => setQrValue(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                placeholder={
+                  qrType === "pdf"
+                    ? "https://drive.google.com/file/d/xxx/view"
+                    : "https://i.imgur.com/xxx.jpg"
+                }
+              />
+            </div>
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+              <p className="text-xs text-gray-600">
+                <strong>Gợi ý:</strong> Sử dụng các dịch vụ miễn phí như:
+              </p>
+              <ul className="text-xs text-gray-600 mt-2 space-y-1 ml-4">
+                <li>• Google Drive (file PDF/ảnh)</li>
+                <li>• ImgBB, Imgur (ảnh)</li>
+                <li>• Dropbox (PDF/ảnh)</li>
+              </ul>
+            </div>
+          </div>
+        );
+      case "facebook":
+      case "instagram":
+      case "twitter":
+      case "linkedin":
+      case "youtube":
+        return (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {qrType === "facebook" && "Facebook URL hoặc username"}
+              {qrType === "instagram" && "Instagram URL hoặc username"}
+              {qrType === "twitter" && "Twitter URL hoặc username"}
+              {qrType === "linkedin" && "LinkedIn URL hoặc username"}
+              {qrType === "youtube" && "YouTube URL hoặc kênh"}
+            </label>
+            <input
+              type="text"
+              value={socialData[qrType]}
+              onChange={(e) =>
+                setSocialData({ ...socialData, [qrType]: e.target.value })
+              }
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              placeholder={
+                qrType === "facebook"
+                  ? "your.name hoặc https://facebook.com/your.name"
+                  : qrType === "instagram"
+                  ? "username hoặc https://instagram.com/username"
+                  : qrType === "twitter"
+                  ? "username hoặc https://twitter.com/username"
+                  : qrType === "linkedin"
+                  ? "username hoặc https://linkedin.com/in/username"
+                  : "channel hoặc https://youtube.com/channel"
+              }
+            />
+          </div>
+        );
+      case "social":
+        return (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                <Facebook size={16} className="text-blue-600" />
+                Facebook
+              </label>
+              <input
+                type="text"
+                value={socialData.facebook}
+                onChange={(e) =>
+                  setSocialData({ ...socialData, facebook: e.target.value })
+                }
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                placeholder="your.name"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                <Instagram size={16} className="text-pink-600" />
+                Instagram
+              </label>
+              <input
+                type="text"
+                value={socialData.instagram}
+                onChange={(e) =>
+                  setSocialData({ ...socialData, instagram: e.target.value })
+                }
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                placeholder="username"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                <Twitter size={16} className="text-blue-400" />
+                Twitter
+              </label>
+              <input
+                type="text"
+                value={socialData.twitter}
+                onChange={(e) =>
+                  setSocialData({ ...socialData, twitter: e.target.value })
+                }
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                placeholder="username"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                <Linkedin size={16} className="text-blue-700" />
+                LinkedIn
+              </label>
+              <input
+                type="text"
+                value={socialData.linkedin}
+                onChange={(e) =>
+                  setSocialData({ ...socialData, linkedin: e.target.value })
+                }
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                placeholder="username"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                <Youtube size={16} className="text-red-600" />
+                YouTube
+              </label>
+              <input
+                type="text"
+                value={socialData.youtube}
+                onChange={(e) =>
+                  setSocialData({ ...socialData, youtube: e.target.value })
+                }
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                placeholder="channel"
+              />
+            </div>
+          </div>
+        );
       default:
         return (
           <div>
@@ -270,7 +529,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="gradient-bg text-white py-8 shadow-lg">
         <div className="container mx-auto px-4">
           <h1 className="text-4xl font-bold text-center flex items-center justify-center gap-3">
@@ -283,17 +541,14 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <div className="grid lg:grid-cols-2 gap-8">
-          {/* Left Panel - Settings */}
           <div className="bg-white rounded-xl shadow-lg p-6 space-y-6">
             <div>
               <h2 className="text-2xl font-bold text-gray-800 mb-4">
                 Tùy chỉnh mã QR
               </h2>
 
-              {/* QR Type Selection */}
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-3">
                   Loại mã QR
@@ -324,10 +579,8 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Input Field */}
               <div className="mb-6">{renderInputField()}</div>
 
-              {/* Size Control */}
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Kích thước: {size}px
@@ -347,7 +600,6 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Colors */}
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -389,7 +641,6 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Error Correction Level */}
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Mức độ sửa lỗi
@@ -414,7 +665,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Right Panel - Preview & Download */}
           <div className="space-y-6">
             <div className="bg-white rounded-xl shadow-lg p-6">
               <h2 className="text-2xl font-bold text-gray-800 mb-4">
@@ -441,7 +691,6 @@ export default function Home() {
                 )}
               </div>
 
-              {/* Download Buttons */}
               {getQRValue() && (
                 <div className="mt-6 space-y-3">
                   <button
@@ -462,7 +711,6 @@ export default function Home() {
               )}
             </div>
 
-            {/* Features */}
             <div className="bg-white rounded-xl shadow-lg p-6">
               <h3 className="text-xl font-bold text-gray-800 mb-4">
                 Tính năng nổi bật
@@ -473,10 +721,10 @@ export default function Home() {
                     <QrCode size={24} />
                   </div>
                   <h4 className="font-semibold text-gray-800 text-sm mb-1">
-                    Nhiều định dạng
+                    16 loại QR
                   </h4>
                   <p className="text-xs text-gray-600">
-                    Hỗ trợ text, URL, email, WiFi và nhiều hơn nữa
+                    Text, URL, Email, WiFi, MXH và nhiều hơn
                   </p>
                 </div>
                 <div className="feature-card p-4 bg-gradient-to-br from-green-50 to-teal-50 rounded-lg">
@@ -484,21 +732,21 @@ export default function Home() {
                     <Download size={24} />
                   </div>
                   <h4 className="font-semibold text-gray-800 text-sm mb-1">
-                    Tải xuống dễ dàng
+                    Tải PNG/SVG
                   </h4>
                   <p className="text-xs text-gray-600">
-                    Xuất file PNG hoặc SVG chất lượng cao
+                    Xuất file chất lượng cao
                   </p>
                 </div>
                 <div className="feature-card p-4 bg-gradient-to-br from-orange-50 to-red-50 rounded-lg">
                   <div className="text-orange-600 mb-2">
-                    <CreditCard size={24} />
+                    <Share2 size={24} />
                   </div>
                   <h4 className="font-semibold text-gray-800 text-sm mb-1">
-                    Miễn phí 100%
+                    Mạng xã hội
                   </h4>
                   <p className="text-xs text-gray-600">
-                    Không giới hạn số lượng mã QR tạo
+                    Facebook, Instagram, Twitter, LinkedIn, YouTube
                   </p>
                 </div>
                 <div className="feature-card p-4 bg-gradient-to-br from-pink-50 to-purple-50 rounded-lg">
@@ -506,10 +754,10 @@ export default function Home() {
                     <MapPin size={24} />
                   </div>
                   <h4 className="font-semibold text-gray-800 text-sm mb-1">
-                    Tùy chỉnh linh hoạt
+                    Miễn phí 100%
                   </h4>
                   <p className="text-xs text-gray-600">
-                    Đổi màu sắc, kích thước theo ý muốn
+                    Không giới hạn số lượng
                   </p>
                 </div>
               </div>
@@ -518,7 +766,6 @@ export default function Home() {
         </div>
       </main>
 
-      {/* Footer */}
       <footer className="bg-gray-800 text-white py-6 mt-12">
         <div className="container mx-auto px-4 text-center">
           <p className="text-gray-300">
